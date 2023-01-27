@@ -1,26 +1,31 @@
-﻿// See https://aka.ms/new-console-template for more information
-using System.Net.NetworkInformation;
+﻿using System.Net.NetworkInformation;
 
-
-Console.WriteLine("Hello, World!");
-var bgThread = new Thread(() =>
+// Passing Parameter to thread
+var bgThread = new Thread((object? data) =>
 {
-    while (true)
+    if (data is null) return;
+    int counter = 0;
+    var result = int.TryParse(data.ToString(), out int maxCount);
+
+    if (!result) return;
+    while (counter < maxCount)
     {
         bool isNetworkUp = NetworkInterface.GetIsNetworkAvailable();
 
-        Console.WriteLine($"Is network avaiable: {isNetworkUp}");
-        Thread.Sleep(1000);
+        // Thread.CurrentThread.ManagedThreadId Thread unique Id
+        Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId} | Is network avaiable: {isNetworkUp} | {counter}");
+        Thread.Sleep(10);
+        counter++;
     }
 });
 
-bgThread.IsBackground = true;
-bgThread.Start();
+// Passing Parameter to thread
+bgThread.Start(12);
 
 for (int i = 0; i < 10; i++)
 {
-    Console.WriteLine("Main thread is working...");
-    Task.Delay(500);
+    Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId} | Main thread is working...");
+    Thread.Sleep(400);
 }
 
 Console.WriteLine("Done");
