@@ -1,31 +1,51 @@
 ﻿using System.Net.NetworkInformation;
 using Threading;
 
-Console.WriteLine("Hello, World!");
-var networkingWork = new SchedulingThreads();
+Parallel.Invoke(
+    () =>
+    {
+        Console.WriteLine($"Hello from lambda expression. Thread id: {Thread.CurrentThread.ManagedThreadId}");
+    },
+    new Action(() =>
+    {
+        Console.WriteLine($"Hello from Action. Thread id: {Thread.CurrentThread.ManagedThreadId}");
+    }),
+    delegate ()
+    {
+        Console.WriteLine($"Hello from delegate. Thread id: {Thread.CurrentThread.ManagedThreadId}");
+    }
+);
 
-var bgThread1 = new Thread(networkingWork.CheckNetworkStatus);
-var bgThread2 = new Thread(networkingWork.CheckNetworkStatus);
-var bgThread3 = new Thread(networkingWork.CheckNetworkStatus);
-var bgThread4 = new Thread(networkingWork.CheckNetworkStatus);
-var bgThread5 = new Thread(networkingWork.CheckNetworkStatus);
-
-bgThread1.Priority = ThreadPriority.Lowest;
-bgThread2.Priority = ThreadPriority.BelowNormal;
-bgThread3.Priority = ThreadPriority.Normal;
-bgThread4.Priority = ThreadPriority.AboveNormal;
-bgThread5.Priority = ThreadPriority.Highest;
-
-bgThread1.Start("Lowest");
-bgThread2.Start("BelowNormal");
-bgThread3.Start("Normal");
-bgThread4.Start("AboveNormal");
-bgThread5.Start("Highest");
-
-for (int i = 0; i < 10; i++)
+var numbers = new List<int>()
 {
-    Console.WriteLine("Main thread working...");
-}
+    1,2, 3, 4, 5, 6, 7
+};
 
-Console.WriteLine("Done");
+Parallel.ForEach(numbers, number =>
+{
+    bool timeContainsNumber = DateTime.Now.ToLongTimeString().Contains(number.ToString());
+    if (timeContainsNumber)
+    {
+        Console.WriteLine($"The current time contains number {number}. Thread id: {Thread.CurrentThread.ManagedThreadId}");
+    }
+    else
+    {
+        Console.WriteLine($"The current time does not contain number {number}. Thread id: {Thread.CurrentThread.ManagedThreadId}");
+    }
+});
+
+
+var evenNumbers = numbers.Where(n => n % 2 == 0);
+var evenNumbersP = numbers.AsParallel().Where(n =>
+{
+    Task.Delay(100);
+    return n % 2 == 0;
+});
+
+var numberString = string.Join(",", evenNumbers);
+var numberStringP = string.Join(",", evenNumbersP);
+
+Console.WriteLine($"Number string: {numberString}");
+Console.WriteLine($"Number string: {numberStringP}");
+
 Console.ReadKey();
